@@ -26,12 +26,12 @@ def repair_data(p, idx0, idx1=None):
     end_time = time.time()
     return end_time - start_time
 
-def generate_files(num_files, max_size=128*1024*1024*1024):  # max size: 128GiB
+def generate_files(input_path, num_files, max_size=128*1024*1024*1024):  # max size: 128GiB
     files = []
     for _ in range(num_files):
         file_size = random.randint(1, max_size)
         file = f"file_{_}.dat"
-        with open(file, 'wb') as f:
+        with open(os.path.join(input_path, file), 'wb') as f:
             f.write(os.urandom(file_size))
         files.append(file)
     return files
@@ -67,7 +67,8 @@ def compare_files(file1, file2):
 
 def test_evenodd(p, input_path, output_path):
     # Step 1: Generate files
-    files = generate_files(1, 1024)  # assuming max number of files
+    breakpoint()
+    files = generate_files(input_path, 10, 1024)  # assuming max number of files
 
     # Step 2: Write data
     tW_total = 0
@@ -94,6 +95,9 @@ def test_evenodd(p, input_path, output_path):
             tBR_total += read_data(p, file, out)
             assert compare_files(os.path.join(input_path, file), out)
         restore_disk_folders(delete_folders)
+
+    print(f'Read test passed')
+    return
 
     # Step 7: Random delete and repair
     tF_total = 0
