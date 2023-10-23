@@ -1,0 +1,8 @@
+input_data/
+output_data/
+.vscode/
+judge_space/
+*.out
+*.dat
+*.pdf
+*.log
