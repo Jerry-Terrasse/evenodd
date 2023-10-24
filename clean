@@ -3,6 +3,8 @@ rm -rf ./disk_*
 rm -rf ./deleted_disk_*
 rm -rf ./input_data
 rm -rf ./output_data
+rm -rf ./trash
 
 mkdir ./input_data
 mkdir ./output_data
+mkdir ./trash
