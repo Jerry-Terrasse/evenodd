@@ -71,6 +71,7 @@ int main(int argc, const char *argv[])
         evenodd_read(p, fname, opt);
         break;
     case 'p': // repair
+        throw "not implemented";
         idx0 = atoi(argv[3]);
         idx1 = argc == 4 ? -1 : atoi(argv[4]);
         // evenodd_repair(p, idx0, idx1);
@@ -130,9 +131,7 @@ void blk_xor(char *dst, char *src, size_t len)
 void evenodd_write(int p, const char *ipt, const char *fname)
 {
     Config cfg(p, 0);
-    std::shared_ptr<char[]> buf(new char[cfg.buf]);
-    using BLK = char(*)[p][cfg.blk];
-    BLK blk = (BLK)buf.get();
+    char blk[p + 2][p][cfg.blk];
 
     std::ifstream fin(ipt, std::ios::binary);
 
@@ -184,10 +183,7 @@ void evenodd_write(int p, const char *ipt, const char *fname)
 void evenodd_read0(int p, File &f, const char *opt)
 {
     Config cfg(p, 0);
-    std::shared_ptr<char[]> buf(
-        new char[cfg.buf / (p + 2)]); // only need space for 1 disk
-    using BLK = char(*)[p][cfg.blk];
-    BLK blk = (BLK)buf.get();
+    char blk[1][p][cfg.blk]; // only need space for one disk
 
     std::ofstream fout(opt, std::ios::binary);
     int remain = f.size;
@@ -200,7 +196,7 @@ void evenodd_read0(int p, File &f, const char *opt)
             fin.read(blk[0][0], std::min(cfg.blk * (p - 1), remain));
 
             fout.write(blk[0][0], std::min(cfg.blk * (p - 1), remain));
-            std::cout.write(blk[0][0], std::min(cfg.blk * (p - 1), remain));
+            // std::cout.write(blk[0][0], std::min(cfg.blk * (p - 1), remain));
             remain -= cfg.blk * (p - 1);
             if (remain <= 0) {
                 break;
@@ -217,9 +213,7 @@ void evenodd_read1(int p, File &f, const char *opt, int fail_disk)
         return;
     }
     Config cfg(p, 0);
-    std::shared_ptr<char[]> buf(new char[cfg.buf]);
-    using BLK = char(*)[p][cfg.blk];
-    BLK blk = (BLK)buf.get();
+    char blk[p+2][p][cfg.blk];
 
     std::ofstream fout(opt, std::ios::binary);
     int remain = f.size;
@@ -258,9 +252,7 @@ void evenodd_read1(int p, File &f, const char *opt, int fail_disk)
 void evenodd_read2_pfail(int p, File &f, const char *opt, int fail_disk)
 {
     Config cfg(p, 0);
-    std::shared_ptr<char[]> buf(new char[cfg.buf]);
-    using BLK = char(*)[p][cfg.blk];
-    BLK blk = (BLK)buf.get();
+    char blk[p+2][p][cfg.blk];
 
     int i = fail_disk, i_1 = mod(fail_disk-1, p); // the i-1-th diagonal does not cross the failed disk
     char S[cfg.blk];
@@ -324,9 +316,7 @@ void evenodd_read2(int p, File &f, const char *opt, int fail0, int fail1)
 
     // fail0 < fail1 < p, two data disks fail
     Config cfg(p, 0);
-    std::shared_ptr<char[]> buf(new char[cfg.buf]);
-    using BLK = char(*)[p][cfg.blk];
-    BLK blk = (BLK)buf.get();
+    char blk[p+2][p][cfg.blk];
     
     char S[cfg.blk];
     char S0[p][cfg.blk], S1[p][cfg.blk]; // TODO: on heap?
