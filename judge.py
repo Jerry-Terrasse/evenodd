@@ -4,16 +4,21 @@ import shutil
 import random
 import subprocess
 import time
+from loguru import logger
 
 def write_data(p, input_path, file):
+    logger.debug(f"executing ./evenodd write {p} {input_path} {file}")
     start_time = time.time()
-    subprocess.run(['./evenodd', 'write', str(p), input_path, file])
+    p = subprocess.run(['./evenodd', 'write', str(p), input_path, file])
+    assert p.returncode == 0
     end_time = time.time()
     return end_time - start_time
 
 def read_data(p, file, output_path):
+    logger.debug(f"executing ./evenodd read {p} {file} {output_path}")
     start_time = time.time()
-    subprocess.run(['./evenodd', 'read', str(p), file, output_path])
+    p = subprocess.run(['./evenodd', 'read', str(p), file, output_path])
+    assert p.returncode == 0
     end_time = time.time()
     return end_time - start_time
 
@@ -21,8 +26,10 @@ def repair_data(p, idx0, idx1=None):
     args = ['./evenodd', 'repair', str(p), str(idx0)]
     if idx1 is not None:
         args.append(str(idx1))
+    logger.debug(f"executing {' '.join(args)}")
     start_time = time.time()
-    subprocess.run(args)
+    p = subprocess.run(args)
+    assert p.returncode == 0
     end_time = time.time()
     return end_time - start_time
 
@@ -65,38 +72,51 @@ def compare_files(file1, file2):
     res = os.system(f"diff {file1} {file2}")
     return res == 0
 
+@logger.catch
 def test_evenodd(p, input_path, output_path):
     # Step 1: Generate files
-    breakpoint()
+    logger.info(f"{'='*28} Generating files {'='*28}")
     files = generate_files(input_path, 10, 1024)  # assuming max number of files
+    logger.info(f"Generated {len(files)} files")
 
     # Step 2: Write data
+    logger.info(f"{'='*28} Writing data {'='*28}")
     tW_total = 0
     for file in files:
-        tW_total += write_data(p, os.path.join(input_path, file), file)
+        ipt = os.path.join(input_path, file)
+        logger.info(f"Write: {ipt} -> {file}")
+        tW_total += write_data(p, ipt, file)
+    logger.success(f"Total write time: {tW_total}")
 
     # Step 3: Backup disk_* folders
     # backup_disk_folders()
 
     # Step 4: Random read data
+    logger.info(f"{'='*28} Reading data {'='*28}")
     tNR_total = 0
     for file in random.sample(files, k=len(files)//2):  # assuming we read half the files randomly
         out = os.path.join(output_path, file)
+        logger.info(f"Read: {file} -> {out}")
         tNR_total += read_data(p, file, out)
         assert compare_files(os.path.join(input_path, file), out)
+    logger.success(f"Total read time: {tNR_total}")
 
     # Step 5 and 6: Random delete and read
+    logger.info(f"{'='*28} Random delete and read {'='*28}")
     tBR_total = 0
     for _ in range(7):
         num_to_delete = random.randint(1, 2)
         delete_folders = delete_random_disk_folders(num_to_delete)
+        logger.info(f"Delete: {delete_folders}")
         for file in random.sample(files, k=len(files)//4):  # assuming we read a quarter of the files
             out = os.path.join(output_path, file)
+            logger.info(f"Read: {file} -> {out}")
             tBR_total += read_data(p, file, out)
             assert compare_files(os.path.join(input_path, file), out)
         restore_disk_folders(delete_folders)
+    logger.success(f"Total read time: {tBR_total}")
 
-    print(f'Read test passed')
+    logger.success('Read test passed!')
     return
 
     # Step 7: Random delete and repair
