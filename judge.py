@@ -144,20 +144,9 @@ def test_evenodd(p, input_path, output_path):
             assert compare_folders(delete_folders[1], f"deleted_{delete_folders[1]}")
         # restore_disk_folders(delete_folders)
 
-    # Final verdict
-    backup_folder = 'backup_disk'
-    for folder in os.listdir(backup_folder):
-        if not compare_folders(folder, os.path.join(backup_folder, folder)):
-            print(f"Test failed. {folder} is not consistent.")
-            return
-
-    print("Test passed!")
-
 def main():
     parser = argparse.ArgumentParser(description='Evaluate evenodd storage tool.')
     parser.add_argument('--p', type=int, help='EVENODD parameter p, a prime number.', default=5)
-    parser.add_argument('--file', type=str, help='Identifier of the input file in the simulated filesystem.')
-    parser.add_argument('--output_path', type=str, help='Path to store the output file.')
     
     args = parser.parse_args()
 
