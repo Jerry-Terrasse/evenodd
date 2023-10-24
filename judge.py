@@ -4,6 +4,7 @@ import shutil
 import random
 import subprocess
 import time
+import uuid
 from loguru import logger
 
 def write_data(p, input_path, file):
@@ -33,13 +34,18 @@ def repair_data(p, idx0, idx1=None):
     end_time = time.time()
     return end_time - start_time
 
-def generate_files(input_path, num_files, max_size=128*1024*1024*1024):  # max size: 128GiB
+def generate_files(input_path, num_files, max_size=128*1024*1024*1024, readable: bool = False):  # max size: 128GiB
     files = []
     for _ in range(num_files):
         file_size = random.randint(1, max_size)
         file = f"file_{_}.dat"
         with open(os.path.join(input_path, file), 'wb') as f:
-            f.write(os.urandom(file_size))
+            if readable:
+                lines = [f"{i}: evenodd is easy to use;" for i in range(file_size // 25 + 1)]
+                content = '\n'.join(lines).encode()[:file_size]
+            else:
+                content = os.urandom(file_size)
+            f.write(content)
         files.append(file)
     return files
 
@@ -57,11 +63,16 @@ def delete_random_disk_folders(num_folders):
     disk_folders = [folder for folder in os.listdir() if folder.startswith('disk_')]
     folders_to_delete = random.sample(disk_folders, k=num_folders)
     for folder in folders_to_delete:
-        shutil.move(folder, f"deleted_{folder}")
+        target = f"deleted_{folder}"
+        if os.path.exists(target):
+            shutil.move(target, f'trash/{folder}_{uuid.uuid4()}')
+        shutil.move(folder, target)
     return folders_to_delete
 
 def restore_disk_folders(delete_folders):
     for folder in delete_folders:
+        if os.path.exists(folder):
+            shutil.move(folder, f'trash/{folder}_{uuid.uuid4()}')
         shutil.move(f"deleted_{folder}", folder)
 
 def compare_folders(folder1, folder2):
@@ -76,7 +87,7 @@ def compare_files(file1, file2):
 def test_evenodd(p, input_path, output_path):
     # Step 1: Generate files
     logger.info(f"{'='*28} Generating files {'='*28}")
-    files = generate_files(input_path, 10, 1024)  # assuming max number of files
+    files = generate_files(input_path, 10, 1024, readable=True)  # assuming max number of files
     logger.info(f"Generated {len(files)} files")
 
     # Step 2: Write data
@@ -150,6 +161,7 @@ def main():
     
     args = parser.parse_args()
 
+    os.system('./clean')
     test_evenodd(args.p, 'input_data', 'output_data')
 
 if __name__ == '__main__':
