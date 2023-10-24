@@ -169,7 +169,7 @@ void evenodd_write(int p, const char *ipt, const char *fname)
             blk_xor(blk[p + 1][l], S, cfg.blk);
         }
 
-        for (int t = 0; t <= p+1; t++) {
+        for (int t = 0; t <= p + 1; t++) {
             std::ofstream fout(
                 std::format("disk_{}/{}", t, internal_name(fcnt - 1, blk_id)),
                 std::ios::binary);
@@ -214,7 +214,7 @@ void evenodd_read1(int p, File &f, const char *opt, int fail_disk)
         return;
     }
     Config cfg(p, 0);
-    char blk[p+2][p][cfg.blk];
+    char blk[p + 2][p][cfg.blk];
     memset(blk, 0x00, sizeof(blk));
 
     std::ofstream fout(opt, std::ios::binary);
@@ -255,16 +255,18 @@ void evenodd_read1(int p, File &f, const char *opt, int fail_disk)
 void evenodd_read2_pfail(int p, File &f, const char *opt, int fail_disk)
 {
     Config cfg(p, 0);
-    char blk[p+2][p][cfg.blk];
+    char blk[p + 2][p][cfg.blk];
     memset(blk, 0x00, sizeof(blk));
 
-    int i = fail_disk, i_1 = mod(fail_disk-1, p); // the i-1-th diagonal does not cross the failed disk
+    int i = fail_disk,
+        i_1 = mod(fail_disk - 1,
+                  p); // the i-1-th diagonal does not cross the failed disk
     char S[cfg.blk];
     std::ofstream fout(opt, std::ios::binary);
     int remain = f.size;
-    for(int blk_id = 0; blk_id < f.blk_num; blk_id++) {
-        for(int t = 0; t <= p+1; t++) {
-            if(t == i || t == p) {
+    for (int blk_id = 0; blk_id < f.blk_num; blk_id++) {
+        for (int t = 0; t <= p + 1; t++) {
+            if (t == i || t == p) {
                 memset(blk[t][0], 0x00, cfg.blk * (p - 1));
                 continue;
             }
@@ -274,19 +276,19 @@ void evenodd_read2_pfail(int p, File &f, const char *opt, int fail_disk)
             fin.read(blk[t][0], cfg.blk * (p - 1));
         }
 
-        memcpy(S, blk[p+1][i_1], cfg.blk); // maybe can just ref blk[p+1][i_1]
-        for(int l = 0; l < p; ++l) {
+        memcpy(S, blk[p + 1][i_1], cfg.blk); // maybe can just ref blk[p+1][i_1]
+        for (int l = 0; l < p; ++l) {
             blk_xor(S, blk[l][mod(i_1 - l, p)], cfg.blk);
         }
 
-        for(int k=0; k <= p-2; ++k) {
+        for (int k = 0; k <= p - 2; ++k) {
             memcpy(blk[i][k], S, cfg.blk);
-            blk_xor(blk[i][k], blk[p+1][mod(i+k, p)], cfg.blk);
-            for(int l=0; l < p; ++l) {
-                if(l == i) {
+            blk_xor(blk[i][k], blk[p + 1][mod(i + k, p)], cfg.blk);
+            for (int l = 0; l < p; ++l) {
+                if (l == i) {
                     continue;
                 }
-                blk_xor(blk[i][k], blk[l][mod(i+k-l, p)], cfg.blk);
+                blk_xor(blk[i][k], blk[l][mod(i + k - l, p)], cfg.blk);
             }
         }
 
@@ -305,33 +307,33 @@ void evenodd_read2_pfail(int p, File &f, const char *opt, int fail_disk)
 void evenodd_read2(int p, File &f, const char *opt, int fail0, int fail1)
 {
     assert(fail0 < fail1);
-    if(fail0 >= p) {
+    if (fail0 >= p) {
         evenodd_read0(p, f, opt);
         return;
     }
-    if(fail1 == p+1) {
+    if (fail1 == p + 1) {
         evenodd_read1(p, f, opt, fail0);
         return;
     }
-    if(fail1 == p) {
+    if (fail1 == p) {
         evenodd_read2_pfail(p, f, opt, fail0);
         return;
     }
 
     // fail0 < fail1 < p, two data disks fail
     Config cfg(p, 0);
-    char blk[p+2][p][cfg.blk];
+    char blk[p + 2][p][cfg.blk];
     memset(blk, 0x00, sizeof(blk));
-    
+
     char S[cfg.blk];
     char S0[p][cfg.blk], S1[p][cfg.blk]; // TODO: on heap?
 
     int i = fail0, j = fail1;
     std::ofstream fout(opt, std::ios::binary);
     int remain = f.size;
-    for(int blk_id=0; blk_id < f.blk_num; ++blk_id) {
-        for(int t=0; t <= p+1; ++t) {
-            if(t == i || t == j) {
+    for (int blk_id = 0; blk_id < f.blk_num; ++blk_id) {
+        for (int t = 0; t <= p + 1; ++t) {
+            if (t == i || t == j) {
                 memset(blk[t][0], 0x00, cfg.blk * (p - 1));
                 continue;
             }
@@ -340,22 +342,22 @@ void evenodd_read2(int p, File &f, const char *opt, int fail0, int fail1)
                 std::ios::binary);
             fin.read(blk[t][0], cfg.blk * (p - 1));
         }
-        
+
         memset(S, 0x00, cfg.blk);
         memset(S0, 0x00, cfg.blk * p);
 
         // calc S
-        for(int l=0; l<=p-2; ++l) {
+        for (int l = 0; l <= p - 2; ++l) {
             blk_xor(S, blk[p][l], cfg.blk);
         }
-        for(int l=0; l<=p-2; ++l) {
-            blk_xor(S, blk[p+1][l], cfg.blk);
+        for (int l = 0; l <= p - 2; ++l) {
+            blk_xor(S, blk[p + 1][l], cfg.blk);
         }
 
         // calc S0
-        for(int u=0; u<p; ++u) {
-            for(int l=0; l<=p; ++l) {
-                if(l == i || l == j) {
+        for (int u = 0; u < p; ++u) {
+            for (int l = 0; l <= p; ++l) {
+                if (l == i || l == j) {
                     continue;
                 }
                 blk_xor(S0[u], blk[l][u], cfg.blk);
@@ -363,23 +365,23 @@ void evenodd_read2(int p, File &f, const char *opt, int fail0, int fail1)
         }
 
         // calc S1
-        for(int u=0; u<p; ++u) {
+        for (int u = 0; u < p; ++u) {
             memcpy(S1[u], S, cfg.blk);
         }
-        for(int u=0; u<p; ++u) {
-            blk_xor(S1[u], blk[p+1][u], cfg.blk);
+        for (int u = 0; u < p; ++u) {
+            blk_xor(S1[u], blk[p + 1][u], cfg.blk);
         }
-        for(int u=0; u<p; ++u) {
-            for(int l=0; l<p; ++l) {
-                if(l == i || l == j) {
+        for (int u = 0; u < p; ++u) {
+            for (int l = 0; l < p; ++l) {
+                if (l == i || l == j) {
                     continue;
                 }
-                blk_xor(S1[u], blk[l][mod(u-l, p)], cfg.blk);
+                blk_xor(S1[u], blk[l][mod(u - l, p)], cfg.blk);
             }
         }
 
         int s = mod(i - j - 1, p);
-        for(; s != p-1; s = mod(s + i - j, p)) {
+        for (; s != p - 1; s = mod(s + i - j, p)) {
             memcpy(blk[j][s], S1[mod(j + s, p)], cfg.blk);
             blk_xor(blk[j][s], blk[i][mod(s + j - i, p)], cfg.blk);
 
