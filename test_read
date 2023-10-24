@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+./clean
+./evenodd write 5 test.cpp d
+
+./evenodd read 5 d output_data/test.cpp; diff output_data/test.cpp test.cpp
+echo $?
+read
+
+mv disk_4 deleted_disk_4
+./evenodd read 5 d output_data/test.cpp; diff output_data/test.cpp test.cpp
+echo $?
+read
+
+mv disk_5 deleted_disk_5
+./evenodd read 5 d output_data/test.cpp; diff output_data/test.cpp test.cpp
+echo $?
+read

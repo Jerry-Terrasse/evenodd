@@ -1,3 +1,5 @@
+disk_*/
+deleted_disk_*/
 input_data/
 output_data/
 .vscode/
@@ -6,3 +8,5 @@ judge_space/
 *.dat
 *.pdf
 *.log
+
+evenodd
