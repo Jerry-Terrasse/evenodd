@@ -87,7 +87,7 @@ def compare_files(file1, file2):
 def test_evenodd(p, input_path, output_path):
     # Step 1: Generate files
     logger.info(f"{'='*28} Generating files {'='*28}")
-    files = generate_files(input_path, 10, 1024, readable=True)  # assuming max number of files
+    files = generate_files(input_path, 100, 102400, readable=False)  # assuming max number of files
     logger.info(f"Generated {len(files)} files")
 
     # Step 2: Write data

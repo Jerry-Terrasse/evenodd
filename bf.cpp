@@ -358,7 +358,7 @@ void evenodd_read2(int p, File &f, const char *opt, int fail0, int fail1)
                 if(l == i || l == j) {
                     continue;
                 }
-                blk_xor(S, blk[l][u], cfg.blk);
+                blk_xor(S0[u], blk[l][u], cfg.blk);
             }
         }
 
@@ -394,6 +394,7 @@ void evenodd_read2(int p, File &f, const char *opt, int fail0, int fail1)
             if (remain <= 0) {
                 break;
             }
+            fout.flush();
         }
     }
 }
