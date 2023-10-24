@@ -144,10 +144,10 @@ void evenodd_write(int p, const char *ipt, const char *fname)
     char S[cfg.blk];
 
     for (int blk_id = 0; blk_id < f.blk_num; blk_id++) {
+        memset(blk, 0x00, sizeof(blk));
         for (int t = 0; t < p; t++) {
             fin.read(blk[t][0], cfg.blk * (p - 1));
         }
-        // TODO: fill 0 to the last block
 
         for (int l = 0; l < p - 1; ++l) {
             for (int t = 0; t < p; ++t) {
@@ -184,6 +184,7 @@ void evenodd_read0(int p, File &f, const char *opt)
 {
     Config cfg(p, 0);
     char blk[1][p][cfg.blk]; // only need space for one disk
+    memset(blk, 0x00, sizeof(blk));
 
     std::ofstream fout(opt, std::ios::binary);
     int remain = f.size;
@@ -214,6 +215,7 @@ void evenodd_read1(int p, File &f, const char *opt, int fail_disk)
     }
     Config cfg(p, 0);
     char blk[p+2][p][cfg.blk];
+    memset(blk, 0x00, sizeof(blk));
 
     std::ofstream fout(opt, std::ios::binary);
     int remain = f.size;
@@ -245,6 +247,7 @@ void evenodd_read1(int p, File &f, const char *opt, int fail_disk)
                 break;
             }
         }
+        fout.flush();
     }
 }
 
@@ -253,6 +256,7 @@ void evenodd_read2_pfail(int p, File &f, const char *opt, int fail_disk)
 {
     Config cfg(p, 0);
     char blk[p+2][p][cfg.blk];
+    memset(blk, 0x00, sizeof(blk));
 
     int i = fail_disk, i_1 = mod(fail_disk-1, p); // the i-1-th diagonal does not cross the failed disk
     char S[cfg.blk];
@@ -317,6 +321,7 @@ void evenodd_read2(int p, File &f, const char *opt, int fail0, int fail1)
     // fail0 < fail1 < p, two data disks fail
     Config cfg(p, 0);
     char blk[p+2][p][cfg.blk];
+    memset(blk, 0x00, sizeof(blk));
     
     char S[cfg.blk];
     char S0[p][cfg.blk], S1[p][cfg.blk]; // TODO: on heap?
