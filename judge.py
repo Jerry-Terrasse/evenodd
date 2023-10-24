@@ -144,7 +144,7 @@ def test_evenodd(p, input_path, output_path):
 
 def main():
     parser = argparse.ArgumentParser(description='Evaluate evenodd storage tool.')
-    parser.add_argument('--p', type=int, help='EVENODD parameter p, a prime number.')
+    parser.add_argument('--p', type=int, help='EVENODD parameter p, a prime number.', default=5)
     parser.add_argument('--file', type=str, help='Identifier of the input file in the simulated filesystem.')
     parser.add_argument('--output_path', type=str, help='Path to store the output file.')
     
